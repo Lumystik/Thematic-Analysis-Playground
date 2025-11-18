@@ -2,15 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Code Playground – Save & Delete</title>
+  <title>Code Playground – Braun & Clarke Themes</title>
   <!-- Nunito Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-body: #000000;
+      --bg-app: #000000;
+      --bg-column: #141621;
+      --bg-column-header: #1c1e2b;
+      --border-column: #232636;
+      --accent: #ffb36a;
+      --accent-soft: #ff9b6a;
+      --text-main: #ffffff;
+      --text-muted: #8b8fa7;
+    }
+
     body {
       margin: 0;
       font-family: "Nunito Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #000000;
-      color: #fff;
+      background: var(--bg-body);
+      color: var(--text-main);
       padding: 20px;
       display: flex;
       justify-content: center;
@@ -18,7 +30,7 @@
 
     .app {
       width: 100%;
-      max-width: 1200px;
+      max-width: 1400px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -35,12 +47,12 @@
       font-size: 1.1rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #ffb36a;
+      color: var(--accent);
     }
 
     .top-bar small {
       font-size: 0.75rem;
-      color: #8b8fa7;
+      color: var(--text-muted);
     }
 
     .controls {
@@ -71,7 +83,7 @@
     }
 
     .controls button {
-      background: #ff9b6a;
+      background: var(--accent-soft);
       padding: 7px 14px;
       border: none;
       border-radius: 999px;
@@ -94,19 +106,19 @@
     .controls span.hint {
       margin-left: auto;
       font-size: 0.7rem;
-      color: #8b8fa7;
+      color: var(--text-muted);
       white-space: nowrap;
     }
 
     .board {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 10px;
     }
 
     .column {
-      background: #141621;
-      border: 1px solid #232636;
+      background: var(--bg-column);
+      border: 1px solid var(--border-column);
       border-radius: 10px;
       display: flex;
       flex-direction: column;
@@ -116,7 +128,7 @@
 
     .column-header {
       padding: 8px;
-      background: #1c1e2b;
+      background: var(--bg-column-header);
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.07em;
@@ -128,7 +140,7 @@
     }
 
     .column-header:focus {
-      outline: 1px solid #ffb36a;
+      outline: 1px solid var(--accent);
       outline-offset: -2px;
     }
 
@@ -150,22 +162,27 @@
     }
 
     .column-body.over {
-      outline: 1px dashed #ffb36a;
+      outline: 1px dashed var(--accent);
       outline-offset: -3px;
     }
 
     .card {
       padding: 6px 8px 6px 10px;
       border-radius: 8px;
-      cursor: grab;
       background: linear-gradient(135deg, #ff9a8b, #ff6a88);
       font-size: 0.8rem;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-      user-select: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 6px;
+    }
+
+    /* allow selection & copying */
+    .card,
+    .card-text {
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     .card.dragging {
@@ -191,10 +208,92 @@
       justify-content: center;
       cursor: pointer;
       padding: 0;
+      flex-shrink: 0;
     }
 
     .delete-card:hover {
       background: rgba(0, 0, 0, 0.35);
+    }
+
+    /* Descriptor cards (auto-generated theme descriptions) */
+    .descriptor-card {
+      background: linear-gradient(135deg, #ffe4b5, #ffb36a);
+      color: #241307;
+      border: 1px dashed rgba(0, 0, 0, 0.35);
+      font-weight: 600;
+      cursor: default;
+    }
+
+    .descriptor-card .card-text {
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    .descriptor-card[draggable="false"] {
+      cursor: default;
+    }
+
+    /* ---------- PRINT STYLES ---------- */
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+
+    @media print {
+      html, body {
+        background: #000000 !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        padding: 0;
+        margin: 0;
+      }
+
+      .app {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      .controls {
+        display: none !important;
+      }
+
+      .top-bar small {
+        display: none !important;
+      }
+
+      .top-bar h1 {
+        color: var(--accent) !important;
+        margin-bottom: 6px;
+      }
+
+      .board {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .column {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        background: var(--bg-column) !important;
+        border-color: var(--border-column) !important;
+      }
+
+      .column-header {
+        background: var(--bg-column-header) !important;
+        color: #aaaaaa !important;
+      }
+
+      .card {
+        box-shadow: none;
+        background: linear-gradient(135deg, #ff9a8b, #ff6a88) !important;
+        color: #250707 !important;
+      }
+
+      .descriptor-card {
+        background: linear-gradient(135deg, #ffe4b5, #ffb36a) !important;
+        color: #241307 !important;
+      }
     }
   </style>
 </head>
@@ -202,33 +301,102 @@
   <div class="app">
     <div class="top-bar">
       <h1>Code Playground</h1>
-      <small>Drag codes, delete them, and your layout auto-saves in this browser.</small>
+      <small>Drag codes, auto-generate Braun & Clarke style theme descriptors, and save the layout.</small>
     </div>
 
     <div class="controls">
       <input id="new-code" type="text" placeholder="Write a new code and press Add or Enter…" />
       <button id="add-code"><span>＋</span> Add code</button>
       <button id="add-column" class="secondary">＋ Column</button>
+      <button id="generate-descriptors" class="secondary">Auto-describe themes</button>
       <button id="save-layout" class="secondary">Save layout</button>
-      <span class="hint">Titles & positions are saved automatically.</span>
+      <button id="export-pdf" class="secondary">Export PDF</button>
+      <span class="hint">Titles, positions & descriptors are saved automatically.</span>
     </div>
 
     <div class="board" id="board">
-      <!-- Columns will be created by JS -->
+      <!-- Columns created by JS -->
     </div>
   </div>
 
   <script>
+    // Use v1 to stay compatible with your previous saved layout
     const STORAGE_KEY = "codePlaygroundLayout_v1";
+
     const board = document.getElementById("board");
     const input = document.getElementById("new-code");
     const addButton = document.getElementById("add-code");
     const saveButton = document.getElementById("save-layout");
     const addColumnButton = document.getElementById("add-column");
+    const exportPdfButton = document.getElementById("export-pdf");
+    const generateDescriptorsButton = document.getElementById("generate-descriptors");
 
     let draggedCard = null;
 
-    // ---------- Layout helpers ----------
+    // ---------- Braun & Clarke-ish helpers ----------
+
+    const STOPWORDS = new Set([
+      "the","and","or","of","to","a","an","in","on","for","with",
+      "is","are","was","were","it","that","this","these","those",
+      "i","you","he","she","they","we","me","my","your","their",
+      "about","like","just","very","really","from","into","around",
+      "when","then","than","because","but","also","more","less"
+    ]);
+
+    function getTopKeywordsFromCodes(codes, max = 3) {
+      const freq = {};
+      codes.forEach(text => {
+        text
+          .toLowerCase()
+          .replace(/[.,!?;:()"']/g, " ")
+          .split(/\s+/)
+          .filter(w => w.length > 3 && !STOPWORDS.has(w))
+          .forEach(w => {
+            freq[w] = (freq[w] || 0) + 1;
+          });
+      });
+
+      return Object.entries(freq)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, max)
+        .map(([w]) => w);
+    }
+
+    function buildDescriptorText(codes, columnTitle) {
+      if (!codes || codes.length === 0) {
+        return "DESCRIPTOR: No codes in this column yet – add some codes before drafting a theme.";
+      }
+
+      const trimmedTitle = (columnTitle || "").trim();
+      const keywords = getTopKeywordsFromCodes(codes);
+      const exampleCodes = codes.slice(0, 5);
+      const remainingCount = codes.length - exampleCodes.length;
+
+      const codesPart =
+        exampleCodes.map(c => `"${c}"`).join(", ") +
+        (remainingCount > 0 ? ` … (+${remainingCount} more codes)` : "");
+
+      const centralConcept =
+        trimmedTitle ||
+        (keywords[0] ? keywords[0] : "a recurring way participants make sense of this experience");
+
+      const keywordPhrase = keywords.length
+        ? `repeating ideas around ${keywords.join(", ")}`
+        : "a recurring pattern of meaning across different situations";
+
+      return (
+        `DESCRIPTOR: This theme, tentatively named "${centralConcept}", brings together a ` +
+        `pattern of shared meaning rather than just a list of topics. Across codes such as ` +
+        `${codesPart}, the data repeatedly point to ${keywordPhrase}. Taken together, these ` +
+        `codes suggest a central organising concept of "${centralConcept}" – where ` +
+        `participants are not simply talking about this topic, but doing a particular kind ` +
+        `of sense-making. Refine this description to clarify what is unique about this theme, ` +
+        `where its boundaries lie, and how it answers your research question.`
+      );
+    }
+
+    // ---------- Layout + cards ----------
+
     function createColumnElement(index, title, cards) {
       const column = document.createElement("div");
       column.className = "column";
@@ -264,7 +432,7 @@
 
       if (Array.isArray(cards)) {
         cards.forEach(cardData => {
-          const card = createCardElement(cardData.text || "");
+          const card = createCardElement(cardData.text || "", cardData.type || "code");
           body.appendChild(card);
         });
       }
@@ -275,10 +443,17 @@
       return column;
     }
 
-    function createCardElement(text) {
+    function createCardElement(text, type = "code") {
       const card = document.createElement("div");
       card.className = "card";
-      card.draggable = true;
+      card.dataset.type = type;
+
+      if (type === "descriptor") {
+        card.classList.add("descriptor-card");
+        card.draggable = false;
+      } else {
+        card.draggable = true;
+      }
 
       const span = document.createElement("span");
       span.className = "card-text";
@@ -286,7 +461,7 @@
 
       const del = document.createElement("button");
       del.className = "delete-card";
-      del.title = "Delete code";
+      del.title = "Delete card";
       del.textContent = "×";
 
       del.addEventListener("click", (e) => {
@@ -299,17 +474,19 @@
       card.appendChild(span);
       card.appendChild(del);
 
-      card.addEventListener("dragstart", () => {
-        draggedCard = card;
-        card.classList.add("dragging");
-      });
+      if (type === "code") {
+        card.addEventListener("dragstart", () => {
+          draggedCard = card;
+          card.classList.add("dragging");
+        });
 
-      card.addEventListener("dragend", () => {
-        card.classList.remove("dragging");
-        draggedCard = null;
-        refreshEmptyStates();
-        saveLayoutFromDOM();
-      });
+        card.addEventListener("dragend", () => {
+          card.classList.remove("dragging");
+          draggedCard = null;
+          refreshEmptyStates();
+          saveLayoutFromDOM();
+        });
+      }
 
       return card;
     }
@@ -331,7 +508,8 @@
         };
         bodyEl.querySelectorAll(".card").forEach(card => {
           const text = card.querySelector(".card-text")?.textContent || "";
-          colObj.cards.push({ text: text.trim() });
+          const type = card.dataset.type || "code";
+          colObj.cards.push({ text: text.trim(), type });
         });
         layout.push(colObj);
       });
@@ -361,7 +539,6 @@
       board.innerHTML = "";
 
       if (!layout || !Array.isArray(layout) || layout.length === 0) {
-        // default: 5 blank columns
         for (let i = 0; i < 5; i++) {
           const col = createColumnElement(i, `Column ${i + 1}`, []);
           board.appendChild(col);
@@ -381,6 +558,7 @@
     }
 
     // ---------- Add new codes ----------
+
     function addCode() {
       const text = input.value.trim();
       if (!text) return;
@@ -388,7 +566,7 @@
       const firstColumnBody = document.querySelector(".column-body");
       if (!firstColumnBody) return;
 
-      const card = createCardElement(text);
+      const card = createCardElement(text, "code");
       firstColumnBody.appendChild(card);
 
       input.value = "";
@@ -399,6 +577,7 @@
     }
 
     // ---------- Add new column ----------
+
     function addColumn() {
       const index = document.querySelectorAll(".column").length;
       const col = createColumnElement(index, `Column ${index + 1}`, []);
@@ -406,6 +585,60 @@
       refreshEmptyStates();
       saveLayoutFromDOM();
     }
+
+    // ---------- Auto-generate Braun & Clarke descriptors ----------
+
+    function generateDescriptors() {
+      const columns = document.querySelectorAll(".column");
+
+      columns.forEach(col => {
+        const titleEl = col.querySelector(".column-header");
+        const bodyEl = col.querySelector(".column-body");
+        if (!bodyEl) return;
+
+        const codeCards = Array.from(bodyEl.querySelectorAll(".card"))
+          .filter(c => (c.dataset.type || "code") === "code");
+
+        const codeTexts = codeCards
+          .map(c => c.querySelector(".card-text")?.textContent.trim())
+          .filter(t => t && t.length > 0);
+
+        if (codeTexts.length === 0) {
+          return;
+        }
+
+        const descriptorText = buildDescriptorText(codeTexts, titleEl.textContent);
+
+        const existingDescriptor = bodyEl.querySelector(".descriptor-card");
+        if (existingDescriptor) {
+          existingDescriptor.remove();
+        }
+
+        const descriptorCard = createCardElement(descriptorText, "descriptor");
+
+        if (bodyEl.firstChild) {
+          bodyEl.insertBefore(descriptorCard, bodyEl.firstChild);
+        } else {
+          bodyEl.appendChild(descriptorCard);
+        }
+      });
+
+      refreshEmptyStates();
+      saveLayoutFromDOM();
+
+      generateDescriptorsButton.textContent = "Descriptors updated!";
+      setTimeout(() => {
+        generateDescriptorsButton.textContent = "Auto-describe themes";
+      }, 900);
+    }
+
+    // ---------- Export PDF ----------
+
+    function exportPDF() {
+      window.print();
+    }
+
+    // ---------- Event listeners ----------
 
     addButton.addEventListener("click", addCode);
     input.addEventListener("keydown", (e) => {
@@ -425,7 +658,12 @@
       }, 900);
     });
 
+    exportPdfButton.addEventListener("click", exportPDF);
+
+    generateDescriptorsButton.addEventListener("click", generateDescriptors);
+
     // ---------- init ----------
+
     loadLayout();
   </script>
 </body>
