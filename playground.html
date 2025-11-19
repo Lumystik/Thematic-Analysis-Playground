@@ -463,7 +463,7 @@
       <button id="add-column" class="secondary">＋ Column</button>
       <button id="generate-descriptors" class="secondary">Auto-describe themes</button>
       <button id="save-layout" class="secondary">Save layout</button>
-      <button id="export-pdf" class="secondary">Export PDF</button>
+      <button id="export-csv" class="secondary">Export CSV</button>
 
       <button id="import-csv-trigger" class="secondary">Import codes CSV</button>
       <input id="import-csv" type="file" accept=".csv" style="display:none;" />
@@ -505,9 +505,9 @@
     const addButton = document.getElementById("add-code");
     const saveButton = document.getElementById("save-layout");
     const addColumnButton = document.getElementById("add-column");
-    const exportPdfButton = document.getElementById("export-pdf");
     const generateDescriptorsButton = document.getElementById("generate-descriptors");
 
+    const exportCsvButton = document.getElementById("export-csv");
     const importCsvInput = document.getElementById("import-csv");
     const importCsvTrigger = document.getElementById("import-csv-trigger");
     const analyticsSummary = document.getElementById("analytics-summary");
@@ -517,7 +517,7 @@
     const blackboardBody = document.getElementById("blackboard-body");
 
     let draggedCard = null;
-    let latestStats = null; // NEW: keep last CSV stats
+    let latestStats = null; // from CSV
 
     const STOPWORDS = new Set([
       "the","and","or","of","to","a","an","in","on","for","with",
@@ -701,7 +701,6 @@
       } catch(e) {
         console.warn("Could not save layout:", e);
       }
-      // NEW: re-render analytics with current column structure
       if (latestStats) {
         renderCodeStatsByColumn(latestStats);
       }
@@ -777,10 +776,6 @@
       saveLayoutFromDOM();
       generateDescriptorsButton.textContent = "Descriptors updated!";
       setTimeout(() => { generateDescriptorsButton.textContent = "Auto-describe themes"; }, 900);
-    }
-
-    function exportPDF() {
-      window.print();
     }
 
     // ---------- CSV helpers ----------
@@ -1034,7 +1029,7 @@
         try {
           const rows = parseCSV(e.target.result);
           const stats = buildCodeStatsFromCSV(rows);
-          latestStats = stats;                      // store globally
+          latestStats = stats;
           renderCodeStatsByColumn(stats);
           populateBlackboard(stats);
           analyticsSummary.textContent =
@@ -1047,6 +1042,56 @@
         }
       };
       reader.readAsText(file);
+    }
+
+    // ---------- Export CSV ----------
+    function exportCSV() {
+      if (!latestStats) {
+        alert("No CSV stats loaded yet. Import your coded dataset first.");
+        return;
+      }
+
+      const columns = Array.from(document.querySelectorAll(".column"));
+      const rows = [["theme","code","quote","source"]];
+
+      columns.forEach(col => {
+        const titleEl = col.querySelector(".column-header");
+        const themeName = (titleEl?.textContent || "").trim() || "Untitled";
+
+        const bodyEl = col.querySelector(".column-body");
+        if (!bodyEl) return;
+
+        const codeNames = Array.from(bodyEl.querySelectorAll(".card"))
+          .filter(c => (c.dataset.type || "code") === "code")
+          .map(c => c.querySelector(".card-text")?.textContent.trim())
+          .filter(Boolean);
+
+        codeNames.forEach(codeName => {
+          const stat = latestStats.find(s => s.code === codeName);
+          if (!stat) return;
+
+          stat.examples.forEach(ex => {
+            rows.push([
+              themeName,
+              codeName,
+              ex.quote,
+              ex.source
+            ]);
+          });
+        });
+      });
+
+      const csv = rows.map(r =>
+        r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")
+      ).join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "thematic-analysis-export.csv";
+      link.click();
+      URL.revokeObjectURL(url);
     }
 
     // events
@@ -1066,8 +1111,8 @@
       setTimeout(() => { saveButton.textContent = "Save layout"; }, 900);
     });
 
-    exportPdfButton.addEventListener("click", exportPDF);
     generateDescriptorsButton.addEventListener("click", generateDescriptors);
+    exportCsvButton.addEventListener("click", exportCSV);
 
     importCsvTrigger.addEventListener("click", () => {
       importCsvInput.value = "";
