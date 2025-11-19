@@ -517,7 +517,7 @@
     const blackboardBody = document.getElementById("blackboard-body");
 
     let draggedCard = null;
-    let latestStats = null; // from CSV
+    let latestStats = null; // still used for analytics panel
 
     const STOPWORDS = new Set([
       "the","and","or","of","to","a","an","in","on","for","with",
@@ -778,7 +778,7 @@
       setTimeout(() => { generateDescriptorsButton.textContent = "Auto-describe themes"; }, 900);
     }
 
-    // ---------- CSV helpers ----------
+    // ---------- CSV helpers (for analytics only) ----------
 
     function parseCSVLine(line) {
       const result = [];
@@ -1044,58 +1044,87 @@
       reader.readAsText(file);
     }
 
-    // ---------- Export CSV ----------
+    // ---------- Export CSV: themes + codes + quotes ----------
     function exportCSV() {
-      if (!latestStats) {
-        alert("No CSV stats loaded yet. Import your coded dataset first.");
-        return;
-      }
-
       const columns = Array.from(document.querySelectorAll(".column"));
-      const rows = [["theme","code","quote","source"]];
+
+      // Header: theme + code + card type + stats + up to 3 quotes
+      const rows = [[
+        "theme",
+        "code",
+        "card_type",
+        "total_occurrences",
+        "example_1",
+        "source_1",
+        "example_2",
+        "source_2",
+        "example_3",
+        "source_3"
+      ]];
+
+      let totalCards = 0;
 
       columns.forEach(col => {
-        const titleEl = col.querySelector(".column-header");
-        const themeName = (titleEl?.textContent || "").trim() || "Untitled";
+        const headerEl = col.querySelector(".column-header");
+        const theme = (headerEl ? headerEl.textContent : "Untitled").trim();
+        const cards = Array.from(col.querySelectorAll(".card"));
 
-        const bodyEl = col.querySelector(".column-body");
-        if (!bodyEl) return;
+        cards.forEach(card => {
+          const span = card.querySelector(".card-text");
+          const text = (span ? span.textContent : "").trim();
+          if (!text) return;
 
-        const codeNames = Array.from(bodyEl.querySelectorAll(".card"))
-          .filter(c => (c.dataset.type || "code") === "code")
-          .map(c => c.querySelector(".card-text")?.textContent.trim())
-          .filter(Boolean);
+          const type = card.dataset.type || "code";
 
-        codeNames.forEach(codeName => {
-          const stat = latestStats.find(s => s.code === codeName);
-          if (!stat) return;
+          let stat = null;
+          if (latestStats && type === "code") {
+            stat = latestStats.find(s => s.code === text) || null;
+          }
 
-          stat.examples.forEach(ex => {
-            rows.push([
-              themeName,
-              codeName,
-              ex.quote,
-              ex.source
-            ]);
-          });
+          const count = stat ? stat.count : "";
+          const examples = stat ? stat.examples : [];
+
+          const e1 = examples[0] ? examples[0].quote : "";
+          const s1 = examples[0] ? examples[0].source : "";
+          const e2 = examples[1] ? examples[1].quote : "";
+          const s2 = examples[1] ? examples[1].source : "";
+          const e3 = examples[2] ? examples[2].quote : "";
+          const s3 = examples[2] ? examples[2].source : "";
+
+          rows.push([theme, text, type, count, e1, s1, e2, s2, e3, s3]);
+          totalCards++;
         });
       });
 
-      const csv = rows.map(r =>
-        r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")
-      ).join("\n");
+      if (totalCards === 0) {
+        alert("No cards to export – add some codes first.");
+        return;
+      }
+
+      const csv = rows
+        .map(r =>
+          r
+            .map(v => `"${String(v ?? "").replace(/"/g, '""')}"`)
+            .join(",")
+        )
+        .join("\n");
 
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
+
       const link = document.createElement("a");
       link.href = url;
-      link.download = "thematic-analysis-export.csv";
+      link.download = "themes_with_quotes.csv";
+
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
 
-    // events
+    // ---------- Events ----------
     addButton.addEventListener("click", addCode);
+
     input.addEventListener("keydown", e => {
       if (e.key === "Enter") {
         e.preventDefault();
